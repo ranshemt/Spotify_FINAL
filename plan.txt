@@ -1,0 +1,11 @@
+controller.js
+    route functions
+apiFuncs.js
+    route functions implementations
+utilsFuncs.js
+    utilities
+
+
+
+index.js
+    routes..

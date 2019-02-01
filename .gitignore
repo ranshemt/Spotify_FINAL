@@ -1,0 +1,10 @@
+/node_modules
+launch.json
+*.docx
+*.psd
+*.pdf
+/other
+/graphics
+tmp.JSON
+db_consts.js
+app_consts.js

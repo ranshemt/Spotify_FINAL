@@ -1,0 +1,25 @@
+{
+  "name": "spotify_final",
+  "version": "1.0.0",
+  "description": "Spotify service allowing merging playlists and creating new playlist based on popular artist's tracks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranshemt/Spotify_FINAL.git"
+  },
+  "author": "RanST",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ranshemt/Spotify_FINAL/issues"
+  },
+  "homepage": "https://github.com/ranshemt/Spotify_FINAL#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "mongoose": "^5.4.6",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
+  }
+}
