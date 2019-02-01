@@ -21,8 +21,8 @@ app.get ('/getTracks/:id&:pl_id'        , asyncWrapper(ctrl.getTracks)       )
 app.get ('/getTopArtists/:id'           , asyncWrapper(ctrl.getTopArtists   ))
 app.get ('/getHistory/:id'              , asyncWrapper(ctrl.getHistory      ))
 //Routes - Actual (Functionality)
-app.get ('/makePLbyArtist/:id&:art_id'  , asyncWrapper(ctrl.makePLbyArtist  ))
-app.get ('/mergeMyPlaylists/:id&:pl1_id&:pl2_id'  , asyncWrapper(ctrl.makePLbyArtist  ))
+app.get  ('/makePLbyArtist/:id&:art_id' , asyncWrapper(ctrl.makePLbyArtist   ))
+app.post ('/mergeMyPlaylists/:id'       , asyncWrapper(ctrl.mergeMyPlaylists ))
 //
 //Routes - Utilities / Debug
 app.get ('/basicData/:id'               , asyncWrapper(utilsCtrl.basicData       ))

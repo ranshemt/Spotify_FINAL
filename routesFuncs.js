@@ -111,7 +111,7 @@ async function f_getTracks(pl_id, myAT){
                     if(currTrack.hasOwnProperty('track') == true && currTrack.track.hasOwnProperty('artists') == true && currTrack.track.artists.length < 1)
                         flagMsg = 'no tracks in playlist'
                     if(flagMsg != null){
-                        res.json({
+                        return reject({
                             statusCode: 404,
                             message: `[${f_name} FAILED with message --${flagMsg}-- from: ${call1}]`,
                             actualResponse: {is: false},
@@ -403,21 +403,166 @@ async function f_makePLbyArtist(uid, art_id, myAT){
 }
 //
 /** function
- *  @ gets uid & pl1_id & pl2_id & AT
+ *  @ gets uid & AT & {body}
  *  @ Creating new playlist based on artist's top tracks
  *  @ returns new Promise:
  *  @ success   :   {status, message, actualResponse, previousResponse}
  *  @ failure   :   {status, message, actualResponse, previousResponse}
  *  @ actualResponse {is: false} OR {is: true, data: what_you_want}
  */
-async function f_makePLbyArtist(uid, pl1_id, pl2_id, myAT){
-    //
-    //f_getTracks(pl1_id, myAT)
-    //f_getTracks(pl2_id, myAT)
-    //body_newPL = newPL_name, newPL_desc
-    //f_newPL(uid, body_newPL, myAT)
-    //add to pl
-    //add to history
+async function f_mergeMyPlaylists(uid, bodyPost, myAT){
+    let f_name = 'mergeMyPlaylists()'
+    let call1  = 'f_getTracks(pl1_id)'
+    let call2  = 'f_getTracks(pl2_id)'
+    let call3  = 'f_newPL()'
+    let call4  = 'f_addToPL()'
+    let call5  = 'f_addHistory()'
+    console.log(`starting ${f_name}`)
+    console.log(`   in ${f_name}> received partially uid: ${uid.substr(0, 5)}`)
+    var pl1_tracks = [], pl2_tracks=[], merged_tracks=[]
+    var pl1_id = null, pl2_id = null, pl1_name = null, pl2_name = null
+    var newPL_len = null, newPL_name = null, newPL_desc = null
+    return new Promise(async (resolve, reject) => {
+        //body data
+        pl1_id   = bodyPost.hasOwnProperty('pl1_id'  ) ? bodyPost.pl1_id   : null
+        pl2_id   = bodyPost.hasOwnProperty('pl2_id'  ) ? bodyPost.pl2_id   : null
+        pl1_name = bodyPost.hasOwnProperty('pl1_name') ? bodyPost.pl1_name : null
+        pl2_name = bodyPost.hasOwnProperty('pl2_name') ? bodyPost.pl2_name : null
+        if(pl1_id == null || pl2_id == null || pl1_name == null || pl2_name == null){
+            let msg = `[${f_name} FAILED with message --body object invalid--]`
+            return reject({
+                statusCode: 404,
+                message: msg,
+                actualResponse: {is: false},
+                previousResponse: {}
+            })
+        }
+        //
+        //get pl1_tracks
+        try {
+            const resolve_f_getTracks1 = await f_getTracks(pl1_id, myAT)
+            pl1_tracks = resolve_f_getTracks1.actualResponse.data.tracks.slice()
+        }
+        catch (reject_f_getTracks1){
+            let sc = reject_f_getTracks1.statusCode
+            let ms = reject_f_getTracks1.message
+            let msg = `[${f_name} FAILED with message ${ms} from ${call1}]`
+            return reject({
+                statusCode: sc,
+                message: msg,
+                actualResponse: reject_f_getTracks1.actualResponse,
+                previousResponse: reject_f_getTracks1
+            })
+        }
+        //
+        //get pl2_tracks
+        try {
+            const resolve_f_getTracks2 = await f_getTracks(pl2_id, myAT)
+            pl2_tracks = resolve_f_getTracks2.actualResponse.data.tracks.slice()
+        }
+        catch (reject_f_getTracks2){
+            let sc = reject_f_getTracks2.statusCode
+            let ms = reject_f_getTracks2.message
+            let msg = `[${f_name} FAILED with message ${ms} from ${call2}]`
+            return reject({
+                statusCode: sc,
+                message: msg,
+                actualResponse: reject_f_getTracks2.actualResponse,
+                previousResponse: reject_f_getTracks2
+            })
+        }
+        //
+        //merge the lists & create name/desc/length
+        pl1_tracks.forEach((currTrack1) => {
+            let curr_trackURI1 = 'spotify:track:' + currTrack1.id
+            merged_tracks.push(curr_trackURI1)
+        })
+        pl2_tracks.forEach((currTrack2) => {
+            let curr_trackURI2 = 'spotify:track:' + currTrack2.id
+            merged_tracks.push(curr_trackURI2)
+        })
+        newPL_len = merged_tracks.length
+        newPL_desc = `This playlist with ${newPL_len} tracks is a copy (merged) of 2 playlists:`
+        newPL_desc += ` ${pl1_name} + & ${pl2_name}. Created using Spotify service for REST course`
+        newPL_name = pl1_name.replace(/ .*/, '') + pl2_name.replace(/ .*/, '')
+        //
+        //create new playlist
+        let body_newPL = {
+            name: newPL_name,
+            description: newPL_desc
+        }
+        try{
+            const resolve_f_newPL = await funcs.f_newPL(uid, body_newPL, myAT)
+            newPL_ID = resolve_f_newPL.actualResponse.data.id
+        }
+        catch (reject_f_newPL){
+            let sc = reject_f_newPL.statusCode
+            let ms = reject_f_newPL.message
+            let msg = `[${f_name} FAILED with message ${ms} from ${call3}]`
+            return reject({
+                statusCode: sc,
+                message: msg,
+                actualResponse: reject_f_newPL.actualResponse,
+                previousResponse: reject_f_newPL
+            })
+        }
+        //
+        //add merged list to playlist
+        let body_addToPL = {
+            uris: merged_tracks
+        }
+        try {
+            const resolve_f_addToPL = await funcs.f_addToPL(uid, newPL_ID, body_addToPL, myAT)
+        }
+        catch (reject_f_addToPL){
+            let sc = reject_f_addToPL.statusCode
+            let ms = reject_f_addToPL.message
+            let msg = `[${f_name} FAILED with message ${ms} from ${call4}]`
+            return reject({
+                statusCode: sc,
+                message: msg,
+                actualResponse: reject_f_addToPL.actualResponse,
+                previousResponse: reject_f_addToPL
+            })
+        }
+        //
+        //add to history
+        let body_addHistory = {
+            command: 1,
+            desc: `new playlist created: ${newPL_name} with ${newPL_len} tracks merged playlists: ${pl1_name} & ${pl2_name}`,
+            pl_1: pl1_id,
+            pl_2: pl2_id,
+            pl_new: newPL_ID
+        }
+        try {
+            const resolve_f_addHistory = await funcs.f_addHistory(uid, body_addHistory)
+            let resMsg = `[new playlist created: ${newPL_name} with ${newPL_len} tracks merged playlists: ${pl1_name} & ${pl2_name}]`
+            let R = {
+                pl1_id: pl1_id,
+                pl2_id: pl2_id,
+                pl_new: newPL_ID,
+                pl_length: newPL_len,
+                historyCommand: 1
+            }
+            return resolve({
+                statusCode: 200,
+                message: `[${f_name} SUCCESS with message --${resMsg}-- from: ${call5}]`,
+                actualResponse: {is: true, data: R},
+                previousResponse: resolve_f_addHistory
+            })
+        }
+        catch (reject_f_addHistory){
+            let sc = reject_f_addHistory.statusCode
+            let ms = reject_f_addHistory.message
+            let msg = `[${f_name} FAILED with message ${ms} from ${call5} BUT playlist created. SUCCESS from ${call4}]`
+            return reject({
+                statusCode: sc,
+                message: msg,
+                actualResponse: reject_f_addHistory.actualResponse,
+                previousResponse: reject_f_addHistory
+            })
+        }
+    })//
 }
 //
 //
@@ -427,5 +572,6 @@ module.exports = {
     f_getTracks     : f_getTracks     ,
     f_getTopArtists : f_getTopArtists ,
     f_getHistory    : f_getHistory    ,
-    f_makePLbyArtist: f_makePLbyArtist
+    f_makePLbyArtist: f_makePLbyArtist,
+    f_mergeMyPlaylists: f_mergeMyPlaylists
 }

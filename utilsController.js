@@ -531,7 +531,7 @@ var addHistory = async function(req, res, next){
         })
     }
     //
-    //call to Spotify API using our function
+    //call to addHistory function
     try {
         const resolve_f_addHistory = await uFuncs.f_addHistory(id, body)
         let ms = resolve_f_addHistory.message
