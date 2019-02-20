@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/ranshemt/Spotify_FINAL#readme",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
     "express": "^4.16.4",
     "mongoose": "^5.4.6",
     "request": "^2.88.0",

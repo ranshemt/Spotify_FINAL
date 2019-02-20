@@ -1,5 +1,9 @@
 //npm modules
 const express       =   require ('express')
+const cors          =   require ('cors')
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').load();
+}
 //my modules
 const ctrl          =   require ('./controller')
 const utilsCtrl     =   require ('./utilsController')
@@ -12,6 +16,7 @@ const port  =   process.env.PORT || 3000
 //Middleware(s)
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+app.use(cors())
 
 
 //Routes - Actual (View)
