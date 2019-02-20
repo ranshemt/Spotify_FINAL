@@ -1,10 +1,10 @@
 //npm modules
 const mongoose  = require('mongoose')
-//my modules
-const consts    = require('./db_consts')
 
-const { MLAB_URL, DB_USER, DB_PASS } = consts
-const url = MLAB_URL
+const MLAB_URL = process.env.MLAB_URL
+      DB_USER = process.env.DB_USER
+      DB_PASS = process.env.DB_PASS
+
 const options = {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -12,11 +12,11 @@ const options = {
     pass: DB_PASS
 }
 
-const conn = mongoose.createConnection(url, options)
+const conn = mongoose.createConnection(MLAB_URL, options)
 
 conn.on('connected', () => console.log('mongoose connected'))
 conn.on('error', (err) => console.error(err))
 
-mongoose.connect(url, options)
+mongoose.connect(MLAB_URL, options)
 
 module.exports = conn

@@ -5,7 +5,6 @@
 const request       = require ('request')
 const rp            = require ('request-promise')
 //my modules
-const myAppConsts   = require ('./app_consts')
 const connection    = require ('./db')
 const User          = require ('./user')
 const asyncWrapper  = require ('./async.wrapper')
