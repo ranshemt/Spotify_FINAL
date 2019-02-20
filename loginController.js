@@ -30,6 +30,7 @@ var stateKey = 'spotify_auth_state';
 //
 //
 var loginRoute = async function(req, res, next){
+    console.log('starting loginRoute')
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -47,6 +48,7 @@ var loginRoute = async function(req, res, next){
 //
 //update data in DB
 var updateDB = async function(data, AT, RT){
+    console.log('starting updateDB')
     return new Promise(async (resolve, reject) =>{
         User.updateOne(
             {id: ID},
@@ -66,9 +68,9 @@ var updateDB = async function(data, AT, RT){
 }
 //
 var callbackRoute = async function (req, res, next) {
+    console.log('starting callbackRoute')
     // your application requests refresh and access tokens
     // after checking the state parameter
-
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
