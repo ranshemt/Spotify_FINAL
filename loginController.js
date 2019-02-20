@@ -33,7 +33,6 @@ var loginRoute = async function(req, res, next){
     console.log('starting loginRoute')
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
-
     // your application requests authorization
     var scope = SCOPE
     res.redirect('https://accounts.spotify.com/authorize?' +
@@ -49,13 +48,15 @@ var loginRoute = async function(req, res, next){
 //update data in DB
 var updateDB = async function(data, AT, RT){
     console.log('starting updateDB')
+    let IMG = '#'
+    if(data.images.length > 0)  IMG = data.images[0].url
     return new Promise(async (resolve, reject) =>{
         User.updateOne(
-            {id: ID},
+            {id: data.id},
             {$set: {
                     id: data.id,
                     name: data.display_name,
-                    img: data.images[1].url,
+                    img: IMG,
                     AT,
                     RT
                 }
@@ -76,7 +77,7 @@ var callbackRoute = async function (req, res, next) {
     var storedState = req.cookies ? req.cookies[stateKey] : null;
 
     if (state === null || state !== storedState) {
-        res.redirect('/#' +
+        res.redirect('/#/error' +
             querystring.stringify({
                 error: 'state_mismatch'
             }));
@@ -101,6 +102,7 @@ var callbackRoute = async function (req, res, next) {
             .then(async (body) => {
                 var access_token = body.access_token,
                     refresh_token = body.refresh_token;
+                
 
                 let optionsMe = {
                     url: 'https://api.spotify.com/v1/me',
@@ -110,37 +112,38 @@ var callbackRoute = async function (req, res, next) {
 
                 //get basic data from Spotify API
                 rp(optionsMe)
-                    .then(async (body) => {
+                    .then(async (bodyMe) => {
+                        console.log(`bodyMe: ${JSON.stringify(bodyMe)}`)
                         //update data in DB
-                        updateDB(body, access_token, refresh_token)
+                        updateDB(bodyMe, access_token, refresh_token)
                             .then(mmm => {
                                 //send cookie
-                                res.cookie('ran_hodaya', {id: body.id})
+                                res.cookie('ran_hodaya', {id: bodyMe.id})
                                 //for validation pass the data to querystring
-                                res.redirect('/#' +
+                                res.redirect('/#/user/' +
                                     querystring.stringify({
                                         access_token: access_token,
                                         refresh_token: refresh_token
                                 }))
                             })
                             .catch(err => {
-                                res.redirect('/#' +
+                                res.redirect('/#/error/' +
                                     querystring.stringify({
-                                        error: 'save in DB error'
+                                        errorMsg: err
                                 }))
                             })
                     })
                     .catch(async (err) => {
-                        res.redirect('/#' +
+                        res.redirect('/#/error/' +
                             querystring.stringify({
-                                error: 'invalid_token'
+                                errorMsg: err
                         }))
                     })
             })
             .catch(async (err) => {
-                res.redirect('/#' +
+                res.redirect('/#/error/' +
                     querystring.stringify({
-                        error: 'invalid_token'
+                        errorMsg: err
                 }))
             })
     }
