@@ -38,9 +38,9 @@ var loginRoute = async function(req, res, next){
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
             response_type: 'code',
-            client_id: client_id,
+            client_id: process.env.client_id,
             scope: scope,
-            redirect_uri: redirect_uri,
+            redirect_uri: process.env.redirect_uri,
             state: state
     }))
 }
@@ -86,11 +86,11 @@ var callbackRoute = async function (req, res, next) {
             uri: 'https://accounts.spotify.com/api/token',
             form: {
                 code: code,
-                redirect_uri: redirect_uri,
+                redirect_uri: process.env.redirect_uri,
                 grant_type: 'authorization_code'
             },
             headers: {
-                'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+                'Authorization': 'Basic ' + (new Buffer(process.env.client_id + ':' + process.env.client_secret).toString('base64'))
             },
             json: true
         }
